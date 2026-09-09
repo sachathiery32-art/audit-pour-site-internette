@@ -1,0 +1,88 @@
+# AutoSecAudit configuration file
+# All destructive options are disabled by default and cannot be
+# accidentally enabled from the CLI. They exist only as explicit
+# config flags for authorized, controlled environments.
+
+target:
+  url: ""
+  allowed_hosts: []
+  auth:
+    username: ""
+    password: ""
+    cookie: ""
+
+scan:
+  mode: standard            # quick | standard | deep | web | api | infrastructure | full
+  threads: 5
+  timeout: 10
+  rate_limit: 2             # requests per second
+  retries: 2
+  cache: true
+  resume: false
+
+modules:
+  discovery: true
+  headers: true
+  tls: true
+  xss: true
+  sqli: true
+  nosqli: true
+  command_injection: true
+  ldap_injection: true
+  ssti: true
+  xpath_injection: true
+  path_traversal: true
+  csrf: true
+  access_control: true
+  api: true
+  files: true
+  infrastructure: false     # only meaningful for in-scope hosts
+  cve: true
+  # --- Red-team adaptive modules ---
+  waf: true                  # WAF/CDN fingerprinting
+  deps: true                 # JS library vulnerability analysis
+  ssrf: false                 # triggered adaptively by URL-like params
+  xxe: false                 # triggered adaptively by XML indicators
+  redirect: false            # triggered adaptively by redirect params
+  graphql: false             # triggered adaptively by GraphQL endpoints
+  websocket: false           # triggered adaptively by WS indicators
+  jwt: false                 # triggered adaptively by token cookies
+  cloud: false               # triggered adaptively by cloud signatures
+  business_logic: false     # triggered adaptively by quantity/price params
+  param_mining: false        # triggered adaptively by forms/APIs
+  takeover: false            # triggered adaptively by vulnerable host CNAMEs
+  siteinfo: true             # OSINT: hosting, geolocation, domain age, emails
+  exploit: false             # auto-exploit pass (enable with --exploit)
+  # --- New modules ---
+  cors: true                 # CORS misconfiguration detection
+  cookies: true              # Cookie/session security (Secure, HttpOnly, SameSite)
+  clickjacking: true         # Clickjacking (X-Frame-Options, CSP frame-ancestors)
+  host_header: true          # Host header injection / password reset poisoning
+  cache: true                # Web cache poisoning
+  deserialization: false     # Unsafe deserialization detection
+  prototype_pollution: false # JavaScript prototype pollution
+  race_condition: false      # Race condition detection via concurrent requests
+  rate_limiting: true        # Rate limiting detection on sensitive endpoints
+  info_disclosure: true      # Stack traces, debug modes, version info
+  secrets_exposure: true     # API keys, tokens, private keys in responses
+  http_smuggling: false      # HTTP request smuggling (disabled by default - can affect others)
+  upload: true               # File upload vulnerability detection
+  oauth: false               # OAuth/OIDC security misconfigurations
+  saml: false                # SAML/SSO security detection
+  http_methods: true         # Dangerous HTTP methods (TRACE, PUT, DELETE)
+  mass_assignment: false     # Mass assignment in API endpoints
+  ddos_protection: true      # DDoS resilience assessment (non-destructive)
+
+safety:
+  authorized_only: true
+  destructive_tests: false
+  brute_force: false
+  data_modification: false
+  confirm_authorization: true
+
+reporting:
+  output_dir: "reports"
+  formats:
+    html: true
+    json: true
+    markdown: true

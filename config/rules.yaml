@@ -1,0 +1,423 @@
+# AutoSecAudit adaptive rules engine.
+#
+# Each rule: a condition (AND semantics) + actions.
+# Actions: enable_<module> or prioritize_<module>.
+# The rules engine evaluates these after every discovery phase
+# and dynamically modifies the attack queue.
+#
+# Add new rules here without touching scanner code.
+
+rules:
+
+  # =========================================================================
+  # CMS / FRAMEWORK DETECTION
+  # =========================================================================
+  - condition:
+      technology: wordpress
+    actions:
+      - enable_files
+      - enable_cve
+      - enable_info_disclosure
+      - enable_secrets_exposure
+
+  - condition:
+      technology: drupal
+    actions:
+      - enable_files
+      - enable_cve
+      - enable_info_disclosure
+
+  - condition:
+      technology: joomla
+    actions:
+      - enable_files
+      - enable_cve
+      - enable_info_disclosure
+
+  - condition:
+      technology: laravel
+    actions:
+      - enable_info_disclosure
+      - enable_deserialization
+
+  - condition:
+      technology: django
+    actions:
+      - enable_info_disclosure
+      - enable_prototype_pollution
+
+  - condition:
+      technology: flask
+    actions:
+      - enable_ssti
+      - enable_info_disclosure
+
+  - condition:
+      technology: spring
+    actions:
+      - enable_deserialization
+      - enable_info_disclosure
+
+  - condition:
+      technology: express
+    actions:
+      - enable_prototype_pollution
+      - enable_ssti
+
+  - condition:
+      technology: nextjs
+    actions:
+      - enable_prototype_pollution
+      - enable_xss
+      - enable_open_redirect
+
+  - condition:
+      technology: react
+    actions:
+      - enable_xss
+      - enable_prototype_pollution
+
+  - condition:
+      technology: angular
+    actions:
+      - enable_xss
+      - enable_prototype_pollution
+
+  - condition:
+      technology: vue
+    actions:
+      - enable_xss
+      - enable_prototype_pollution
+
+  # =========================================================================
+  # GRAPHQL
+  # =========================================================================
+  - condition:
+      technology: graphql
+    actions:
+      - enable_graphql
+      - enable_sqli
+      - enable_auth_session
+
+  - condition:
+      event: DISCOVERY_NEW_API
+    actions:
+      - enable_graphql
+
+  # =========================================================================
+  # API SURFACE
+  # =========================================================================
+  - condition:
+      api_detected: true
+    actions:
+      - enable_access_control
+      - enable_api
+      - enable_business_logic
+      - enable_param_mining
+      - enable_mass_assignment
+      - enable_rate_limiting
+      - enable_cors
+      - enable_http_methods
+      - enable_secrets_exposure
+      - prioritize_access_control
+      - prioritize_api
+
+  - condition:
+      api_detected: true
+      has_authentication: true
+    actions:
+      - enable_jwt
+      - enable_csrf
+      - enable_info_disclosure
+
+  # =========================================================================
+  # AUTHENTICATION
+  # =========================================================================
+  - condition:
+      authentication_detected: true
+    actions:
+      - enable_auth_session
+      - enable_access_control
+      - enable_jwt
+      - enable_csrf
+      - enable_cookies
+      - enable_session_fixation
+
+  - condition:
+      has_login_form: true
+    actions:
+      - enable_rate_limiting
+      - enable_auth_session
+      - enable_info_disclosure
+
+  - condition:
+      has_password_form: true
+    actions:
+      - enable_csrf
+      - enable_rate_limiting
+
+  # =========================================================================
+  # PARAMETER-DRIVEN TEST SELECTION (semantic classification)
+  # =========================================================================
+  - condition:
+      endpoint_parameter_type: url
+    actions:
+      - enable_ssrf
+      - enable_redirect
+      - enable_open_redirect
+      - enable_cache
+
+  - condition:
+      endpoint_parameter_type: file
+    actions:
+      - enable_path_traversal
+      - enable_files
+      - enable_upload
+
+  - condition:
+      endpoint_parameter_type: id
+    actions:
+      - enable_access_control
+      - prioritize_access_control
+
+  - condition:
+      endpoint_parameter_type: search
+    actions:
+      - enable_xss
+      - enable_sqli
+      - enable_nosqli
+
+  - condition:
+      endpoint_parameter_type: template
+    actions:
+      - enable_ssti
+      - enable_xxe
+
+  - condition:
+      endpoint_parameter_type: sort
+    actions:
+      - enable_sqli
+      - enable_nosqli
+
+  - condition:
+      endpoint_parameter_type: numeric
+    actions:
+      - enable_business_logic
+      - enable_race_condition
+
+  - condition:
+      endpoint_parameter_type: auth
+    actions:
+      - enable_jwt
+      - enable_auth_session
+
+  - condition:
+      endpoint_parameter_type: email
+    actions:
+      - enable_access_control
+      - enable_rate_limiting
+
+  # =========================================================================
+  # JS / DEPENDENCY SURFACE
+  # =========================================================================
+  - condition:
+      has_js_files: true
+    actions:
+      - enable_deps
+      - enable_param_mining
+      - enable_prototype_pollution
+      - enable_secrets_exposure
+
+  # =========================================================================
+  # COOKIES / SESSIONS
+  # =========================================================================
+  - condition:
+      has_cookie: true
+    actions:
+      - enable_auth_session
+      - enable_jwt
+      - enable_cookies
+      - enable_csrf
+
+  - condition:
+      has_session_cookie: true
+    actions:
+      - enable_cookies
+      - enable_csrf
+      - enable_clickjacking
+
+  # =========================================================================
+  # XML / SOAP
+  # =========================================================================
+  - condition:
+      has_xml_endpoint: true
+    actions:
+      - enable_xxe
+      - enable_sqli
+
+  - condition:
+      technology: soap
+    actions:
+      - enable_xxe
+      - enable_sqli
+      - enable_info_disclosure
+
+  # =========================================================================
+  # WEBSOCKET
+  # =========================================================================
+  - condition:
+      has_websocket: true
+    actions:
+      - enable_websocket
+      - enable_auth_session
+      - enable_xss
+
+  # =========================================================================
+  # INFRASTRUCTURE / SERVICES
+  # =========================================================================
+  - condition:
+      service: ssh
+    actions:
+      - enable_infrastructure
+
+  - condition:
+      service: ftp
+    actions:
+      - enable_infrastructure
+
+  - condition:
+      service: smtp
+    actions:
+      - enable_infrastructure
+
+  - condition:
+      service: mysql
+    actions:
+      - enable_infrastructure
+      - enable_sqli
+
+  - condition:
+      service: redis
+    actions:
+      - enable_infrastructure
+      - enable_ssrf
+
+  - condition:
+      service: mongodb
+    actions:
+      - enable_infrastructure
+      - enable_nosqli
+
+  - condition:
+      service: elasticsearch
+    actions:
+      - enable_infrastructure
+      - enable_info_disclosure
+
+  # =========================================================================
+  # CLOUD
+  # =========================================================================
+  - condition:
+      technology: aws
+    actions:
+      - enable_cloud
+      - enable_secrets_exposure
+
+  - condition:
+      technology: azure
+    actions:
+      - enable_cloud
+      - enable_secrets_exposure
+
+  - condition:
+      technology: gcp
+    actions:
+      - enable_cloud
+      - enable_secrets_exposure
+
+  # =========================================================================
+  # CDN / WAF
+  # =========================================================================
+  - condition:
+      has_cdn: true
+    actions:
+      - enable_waf
+      - enable_cache
+
+  - condition:
+      has_waf: true
+    actions:
+      - enable_waf
+      - enable_rate_limiting
+
+  # =========================================================================
+  # HOST HEADER / VIRTUAL HOSTING
+  # =========================================================================
+  - condition:
+      has_multiple_virtual_hosts: true
+    actions:
+      - enable_host_header
+      - enable_cache
+
+  # =========================================================================
+  # OAUTH / SSO
+  # =========================================================================
+  - condition:
+      has_oauth: true
+    actions:
+      - enable_oauth
+      - enable_csrf
+      - enable_session_fixation
+
+  - condition:
+      has_saml: true
+    actions:
+      - enable_saml
+      - enable_auth_session
+
+  # =========================================================================
+  # REDIRECT PARAMETERS
+  # =========================================================================
+  - condition:
+      has_redirect_parameter: true
+    actions:
+      - enable_open_redirect
+      - enable_ssrf
+      - enable_cache
+      - enable_host_header
+
+  # =========================================================================
+  # FILE UPLOAD
+  # =========================================================================
+  - condition:
+      has_upload_endpoint: true
+    actions:
+      - enable_upload
+      - enable_path_traversal
+      - enable_files
+
+  # =========================================================================
+  # INFORMATION TECHNOLOGY
+  # =========================================================================
+  - condition:
+      technology_detected: true
+    actions:
+      - enable_cve
+      - enable_info_disclosure
+
+  # =========================================================================
+  # SUBDOMAIN ENUMERATION
+  # =========================================================================
+  - condition:
+      has_js_files: true
+    actions:
+      - enable_subdomains
+      - enable_takeover
+
+  - condition:
+      event: DISCOVERY_NEW_SUBDOMAIN
+    actions:
+      - enable_takeover
+      - prioritize_takeover
+      - enable_access_control
+      - enable_files

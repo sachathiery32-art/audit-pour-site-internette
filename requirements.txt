@@ -1,0 +1,18 @@
+# AutoSecAudit — dependencies
+# Works on Windows, macOS and Linux (Python 3.10+)
+
+# HTTP
+requests>=2.31.0
+urllib3>=2.0
+
+# Config & parsing
+PyYAML>=6.0
+
+# Reports
+Jinja2>=3.1.0
+
+# DNS enumeration (subdomains, takeover, OSINT)
+dnspython>=2.4
+
+# ANSI colors in the CLI (Windows support)
+colorama>=0.4.6 ; sys_platform == "win32"
